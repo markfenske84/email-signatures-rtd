@@ -8,29 +8,22 @@
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
-A WordPress plugin for managing professional email signature templates with global styles, custom fields, and automated image generation.
+A WordPress plugin for RTD Logistics email signatures — one fixed brand layout per team member, with copy-to-clipboard support.
 
 ## Description
 
-Email Signatures Pro allows you to create and manage standardized email signatures for your team members. The plugin generates multiple versions of each signature (with/without phone numbers, different layouts) and automatically creates PNG images that can be easily copied into email clients.
+Email Signatures RTD lets you create and manage standardized email signatures for RTD Logistics team members. Each signature uses a locked RTD brand design (colors, fonts, logo, and website are built into the plugin). The plugin automatically generates PNG images for email clients and provides a one-click copy workflow.
 
 ## Features
 
 - **Custom Post Type**: Dedicated "Signatures" post type for managing individual email signatures
-- **Global Style Management**: Configure fonts, colors, images, and social links that apply to all signatures
-- **Custom Fields**: 
-  - Title/Position
+- **Per-signature fields**:
+  - Name (post title)
+  - Title / Position
   - Phone Number
-  - Meeting Link URL
-- **Automatic Image Generation**: Creates multiple PNG versions of each signature:
-  - Full signature with name
-  - With title only
-  - With phone number
-  - Phone number only
-  - Website link
-- **Featured Image Support**: Upload profile photos for each signature
+  - Featured Image (avatar)
+- **Automatic Image Generation**: Creates PNG images for the header block, phone line, and website line
 - **Frontend Display**: Protected signature pages viewable only by logged-in users
-- **Social Media Integration**: Add and manage social media icons with gradient color tinting
 - **Regeneration**: Ability to regenerate signature images when content changes
 - **Automatic Updates**: GitHub-based automatic updates via Plugin Update Checker
 
@@ -40,56 +33,23 @@ Email Signatures Pro allows you to create and manage standardized email signatur
 
 1. Download the plugin files
 2. Upload the `email-signatures-rtd` folder to `/wp-content/plugins/`
-3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Navigate to **Signatures** → **Settings** to configure global options
+3. Activate the plugin through the **Plugins** menu in WordPress
 
 ### From GitHub
 
 This plugin supports automatic updates from GitHub. Once installed, it will check for new releases and notify you when updates are available.
 
-## Configuration
-
-### Global Settings
-
-Access the settings page at **Signatures** → **Settings**. The settings are organized into tabs:
-
-#### Fonts Tab
-- **Fonts Embed URL**: Google Fonts or custom font embed URL
-- **Heading Font CSS Family**: CSS font-family value for headings
-- **Body Font CSS Family**: CSS font-family value for body text
-
-#### Colors Tab
-- **Primary Color**: Main brand color
-- **Secondary Color**: Secondary brand color
-- **Tertiary Color**: Accent color
-- **Neutral Color**: Neutral/gray color
-
-#### Images Tab
-- **Default Avatar**: Fallback profile image
-- **Company Logo**: Your company logo
-- **CTA Button Image**: Call-to-action button graphic
-
-#### Social Links Tab
-- Add multiple social media links with custom icons
-- Icons are automatically tinted to match your brand colors
-- Drag to reorder links
-
-#### General Tab
-- **Signature Website URL**: Company or team website
-- **Office Phone Number**: Main office phone number
-
-### Creating Signatures
+## Creating Signatures
 
 1. Go to **Signatures** → **Add New**
 2. Enter the person's name as the title
 3. Upload a profile photo (Featured Image)
-4. Fill in custom fields:
-   - Title/Position
+4. Fill in:
+   - Title / Position
    - Phone Number
-   - Meeting Link URL
 5. Publish the signature
 
-The plugin will automatically generate the signature page with multiple downloadable image variations.
+The plugin will automatically generate the signature preview page and PNG assets on first view.
 
 ## Usage
 
@@ -101,17 +61,14 @@ Signatures are protected and require users to be logged in to view them.
 
 ### Copying Signatures
 
-On the signature page, users can:
-- Copy the signature to clipboard
-- Download individual PNG images for different use cases
-- View the signature in different layouts
+On the signature page, click **Copy Signature** to copy the email-safe HTML to your clipboard once all images have been generated.
 
 ### Regenerating Signatures
 
-If you update global settings or signature details:
-1. Edit the signature
-2. Click the "Regenerate Signature Images" button
-3. Visit the signature page to generate fresh images
+If you update signature details:
+
+1. Edit the signature and save, or click **Regenerate Signature** on the preview page
+2. Visit the signature page to generate fresh images
 
 ## Technical Details
 
@@ -126,13 +83,10 @@ If you update global settings or signature details:
 
 ### Custom Meta Fields
 
-- `_esp_job_title`: Title/Position
+- `_esp_job_title`: Title / Position
 - `_esp_phone_number`: Phone Number
-- `_esp_meeting_url`: Meeting Link URL
-- `_esp_signature_image_name`: Generated name image attachment ID
-- `_esp_signature_image_title`: Generated title image attachment ID
+- `_esp_signature_image_header`: Generated header image attachment ID
 - `_esp_signature_image_phone`: Generated phone image attachment ID
-- `_esp_signature_image_phone_only`: Generated phone-only image attachment ID
 - `_esp_signature_image_site`: Generated site image attachment ID
 
 ### AJAX Endpoints
@@ -145,15 +99,15 @@ If you update global settings or signature details:
 The plugin uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) (v5.4) to provide automatic updates from GitHub releases.
 
 To check for updates manually:
-1. Go to **Plugins** page
-2. Find "Email Signatures Pro"
+
+1. Go to the **Plugins** page
+2. Find "Email Signatures RTD"
 3. Click "Check for Updates" in the plugin row
 
 ## Requirements
 
 - WordPress 5.0 or higher
 - PHP 7.4 or higher
-- GD Library (for image manipulation)
 
 ## Changelog
 
@@ -163,13 +117,9 @@ To check for updates manually:
 
 ### Version 1.2.0
 - Converted all jQuery code to vanilla JavaScript
-- Added unsaved changes warning system for settings page
-- Improved change detection for color pickers, image uploads, and form fields
-- Added auto-dismissing success message after saving settings
 - Fixed WordPress coding standards compliance issues
 - Enhanced security with proper input sanitization and escaping
 - Replaced deprecated functions (unlink to wp_delete_file)
-- Added HTML5 drag-and-drop for sortable social links
 
 ### Version 1.1.3
 - Implemented plugin-update-checker with direct folder structure
@@ -185,7 +135,7 @@ To check for updates manually:
 
 ## Support
 
-For issues, feature requests, or questions, please [open an issue](https://github.com/markfenske84/email-signatures-pro/issues) on GitHub.
+For issues, feature requests, or questions, please [open an issue](https://github.com/markfenske84/email-signatures-rtd/issues) on GitHub.
 
 ## License
 
@@ -219,10 +169,8 @@ Uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checke
 ```
 email-signatures-rtd/
 ├── assets/
-│   ├── css/
-│   │   └── esp-admin.css
-│   └── js/
-│       └── esp-admin.js
+│   └── imgs/
+│       └── rtd-logo.png
 ├── plugin-update-checker/
 │   └── [library files]
 ├── templates/
@@ -231,25 +179,6 @@ email-signatures-rtd/
 └── README.md
 ```
 
-### Hooks & Filters
-
-The plugin provides various WordPress hooks for customization:
-
-- `esp_signature_template`: Filter signature template path
-- Standard WordPress hooks for post types, meta boxes, and admin pages
-
-## Roadmap
-
-Potential future enhancements:
-
-- [ ] Signature template variations
-- [ ] Export/import signature settings
-- [ ] Bulk signature generation
-- [ ] Email client-specific formats
-- [ ] REST API endpoints
-- [ ] Shortcode support for embedding signatures
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-

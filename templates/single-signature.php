@@ -14,20 +14,22 @@ global $post;
 // Retrieve meta values.
 $job_title    = get_post_meta( $post->ID, '_esp_job_title', true );
 $phone_number = get_post_meta( $post->ID, '_esp_phone_number', true );
-$meeting_url  = get_post_meta( $post->ID, '_esp_meeting_url', true );
 $avatar_url   = get_the_post_thumbnail_url( $post, 'medium' );
 
-$options      = get_option( 'esp_settings', array() );
-$office_phone = $options['office_phone'] ?? '';
-$company_logo = $options['company_logo'] ?? '';
-$cta_button   = $options['cta_button'] ?? '';
-$primary      = $options['primary_color'] ?? '#000000';
-$secondary    = $options['secondary_color'] ?? '#777777';
-$neutral      = $options['neutral_color'] ?? '#cccccc';
-$tertiary     = $options['tertiary_color'] ?? '#aaaaaa';
-$fonts_url    = $options['fonts_url'] ?? '';
-$heading_css  = $options['heading_font_css'] ?? 'Arial, sans-serif';
-$body_css     = $options['body_font_css'] ?? 'Arial, sans-serif';
+// Fixed RTD brand design. This signature is one locked layout for a single company,
+// so the palette, type and company details are intentionally not configurable.
+$primary   = '#384E89'; // name banner
+$secondary = '#54A6DB'; // job title
+$neutral   = '#42454C'; // phone and website
+$tertiary  = '#EB3546'; // accent rule
+
+$fonts_url   = 'https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Red+Hat+Mono:wght@300&display=swap';
+$heading_css = "'Outfit', Arial, sans-serif";
+$body_css    = "'Red Hat Mono', 'Courier New', monospace";
+
+$company_logo = plugins_url( 'assets/imgs/rtd-logo.png', dirname( __DIR__ ) . '/email-signatures-rtd.php' );
+$site_url_raw = 'https://rtdlogistics.com/';
+$site_domain  = 'rtdlogistics.com';
 
 // Sanitize phone number for tel link (digits only) and prepare display version with dot separators.
 $phone_digits = preg_replace( '/\D+/', '', $phone_number ); // keep digits only
@@ -44,37 +46,25 @@ if ( 10 === strlen( $phone_digits ) ) {
     $phone_display = substr( $phone_digits, 0, 3 ) . '.' . substr( $phone_digits, 3 );
 }
 
-// Format office phone number similarly.
-$office_digits  = preg_replace( '/\D+/', '', $office_phone );
-$office_display = $office_digits;
-if ( 10 === strlen( $office_digits ) ) {
-    $office_display = substr( $office_digits, 0, 3 ) . '.' . substr( $office_digits, 3, 3 ) . '.' . substr( $office_digits, 6 );
-} elseif ( 11 === strlen( $office_digits ) && '1' === $office_digits[0] ) {
-    $office_display = substr( $office_digits, 1, 3 ) . '.' . substr( $office_digits, 4, 3 ) . '.' . substr( $office_digits, 7 );
-} elseif ( 7 === strlen( $office_digits ) ) {
-    $office_display = substr( $office_digits, 0, 3 ) . '.' . substr( $office_digits, 3 );
+/*
+ * Generated text images. Each is rendered by html2canvas at 2x and displayed at
+ * half its intrinsic size so it stays sharp on high-DPI screens.
+ */
+$generated = array();
+foreach ( array( 'header', 'phone', 'site' ) as $esp_field ) {
+    $esp_attachment_id = get_post_meta( $post->ID, '_esp_signature_image_' . $esp_field, true );
+    $esp_src           = $esp_attachment_id ? wp_get_attachment_image_src( $esp_attachment_id, 'full' ) : false;
+
+    $generated[ $esp_field ] = $esp_src ? array(
+        'url'    => $esp_src[0],
+        'width'  => (int) round( $esp_src[1] / 2 ),
+        'height' => (int) round( $esp_src[2] / 2 ),
+    ) : null;
 }
 
-// Site URL from plugin settings, fall back to WordPress site URL.
-$site_url_raw = ! empty( $options['website_url'] ) ? $options['website_url'] : site_url();
-$site_domain  = preg_replace( '/https?:\/\/(www\.)?/', '', $site_url_raw );
-
-// Individual text images.
-$signature_name_img_id   = get_post_meta( $post->ID, '_esp_signature_image_name', true );
-$signature_title_img_id  = get_post_meta( $post->ID, '_esp_signature_image_title', true );
-$signature_name_img_url  = $signature_name_img_id ? wp_get_attachment_url( $signature_name_img_id ) : '';
-$signature_title_img_url = $signature_title_img_id ? wp_get_attachment_url( $signature_title_img_id ) : '';
-
-// Phone & site images.
-$signature_phone_img_id = get_post_meta( $post->ID, '_esp_signature_image_phone', true );
-$signature_phone_img_url = $signature_phone_img_id ? wp_get_attachment_url( $signature_phone_img_id ) : '';
-
-$signature_site_img_id  = get_post_meta( $post->ID, '_esp_signature_image_site', true );
-$signature_site_img_url = $signature_site_img_id ? wp_get_attachment_url( $signature_site_img_id ) : '';
-
-// Bottom-only phone (digits, no "M") image.
-$signature_phone_only_img_id = get_post_meta( $post->ID, '_esp_signature_image_phone_only', true );
-$signature_phone_only_img_url = $signature_phone_only_img_id ? wp_get_attachment_url( $signature_phone_only_img_id ) : '';
+// Until every image exists the page shows live markup that relies on this template's
+// stylesheet, which would not survive a paste into an email client.
+$need_render = ( ! $generated['header'] || ! $generated['site'] || ( $phone_display && ! $generated['phone'] ) );
 
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -84,20 +74,21 @@ $signature_phone_only_img_url = $signature_phone_only_img_id ? wp_get_attachment
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo esc_html( get_the_title() ); ?> – Signature</title>
     <?php if ( $fonts_url ) : ?>
-        <?php /* phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Template-specific font loading from settings */ ?>
+        <?php /* phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Template-specific Google Fonts for signature preview */ ?>
         <link rel="stylesheet" href="<?php echo esc_url( $fonts_url ); ?>" />
     <?php endif; ?>
     <style>
-        body{font-family:<?php echo esc_html( $body_css ); ?>;color:<?php echo esc_html( $secondary ); ?>;padding:40px;background:#f8f9fa;}
-        .signature-card{background:#fff;max-width:420px;margin:0 auto;padding:20px;}
-        .signature-name{font-family:<?php echo esc_html( $heading_css ); ?>;font-size:32px;font-weight:700;text-transform:uppercase;color:<?php echo esc_html( $primary ); ?>;margin:0;line-height:1;}
-        .signature-title{margin:4px 0 16px;font-size:18px;text-transform:uppercase;color:<?php echo esc_html( $neutral ); ?>;line-height:1;}
-        .signature-cta-line{text-align:left;margin:0;}
-        .signature-avatar img{width:140px;height:140px;border-radius:50%;object-fit:cover;}
-        .signature-cta img{max-height:48px;display:block;}
-        .social-icons img{width:24px;height:24px;margin-right:6px;}
-        .signature-bottom td{font-size:16px;}
-        .social-icons a{display:inline-block;}
+        <?php /* phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Font stacks are hardcoded literals. */ ?>
+        body{font-family:<?php echo $body_css; ?>;padding:40px;background:#f8f9fa;}
+        .esp-preview{background:#fff;max-width:380px;margin:0 auto;padding:20px;}
+        .esp-header{position:relative;width:380px;height:86px;overflow:hidden;}
+        .esp-header-bar{position:absolute;left:40px;top:19px;width:330px;height:40px;background:<?php echo esc_html( $primary ); ?>;z-index:1;}
+        .esp-header-slant{position:absolute;left:370px;top:19px;width:0;height:0;border-top:40px solid <?php echo esc_html( $primary ); ?>;border-right:10px solid transparent;z-index:1;}
+        .esp-header-avatar{position:absolute;left:0;top:0;width:86px;height:86px;border-radius:50%;background-color:#e4e5e7;background-repeat:no-repeat;background-position:center center;background-size:cover;z-index:2;}
+        .esp-header-name{position:absolute;left:102px;top:21px;height:40px;line-height:40px;z-index:3;font-family:<?php echo $heading_css; ?>;font-size:26px;font-weight:700;color:#ffffff;white-space:nowrap;}
+        .esp-header-title{position:absolute;left:102px;top:62px;line-height:22px;z-index:3;font-family:<?php echo $heading_css; ?>;font-size:17.5px;font-weight:500;color:<?php echo esc_html( $secondary ); ?>;white-space:nowrap;}
+        .esp-mono{font-family:<?php echo $body_css; ?>;font-size:17.5px;font-weight:300;line-height:20px;color:<?php echo esc_html( $neutral ); ?>;white-space:nowrap;}
+        <?php /* phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
     </style>
 </head>
 <body>
@@ -105,135 +96,91 @@ $signature_phone_only_img_url = $signature_phone_only_img_id ? wp_get_attachment
         <button id="esp-regenerate-btn" style="margin-bottom:20px;margin-right:10px;padding:10px 16px;background:<?php echo esc_html( $neutral ); ?>;color:#fff;border:none;border-radius:4px;cursor:pointer;">Regenerate Signature</button>
     <?php endif; ?>
 
-    <?php if ( current_user_can( 'read' ) ) : ?>
+    <?php if ( current_user_can( 'read' ) && ! $need_render ) : ?>
         <button id="esp-copy-btn" style="display:none;margin-bottom:20px;padding:10px 16px;background:<?php echo esc_html( $primary ); ?>;color:#fff;border:none;border-radius:4px;cursor:pointer;">Copy Signature</button>
     <?php endif; ?>
-    <div class="signature-card" style="background:#ffffff;max-width:420px;padding:20px;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr style="display:block;margin-bottom:10px;">
-                <!-- Avatar -->
-                <td width="100" class="signature-avatar" valign="top" align="left" style="padding-right:20px;">
-                    <?php if ( $avatar_url ) : ?>
-                        <img src="<?php echo esc_url( $avatar_url ); ?>" alt="Avatar" style="width:100px;height:100px;border-radius:50%;object-fit:cover;" />
-                    <?php elseif( ! empty( $options['default_avatar'] ) ) : ?>
-                        <img src="<?php echo esc_url( $options['default_avatar'] ); ?>" alt="Avatar" style="width:100px;height:100px;border-radius:50%;object-fit:cover;" />
-                    <?php endif; ?>
-                </td>
 
-                <!-- Main details -->
-                <td valign="center" align="left" style="padding-top:5px;">
-                    <?php if ( $signature_name_img_url ) : ?>
-                        <img src="<?php echo esc_url( $signature_name_img_url ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>" style="display:block;margin:0;" />
+    <div class="esp-preview">
+        <table class="signature-card" width="380" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;width:380px;">
+            <!-- Avatar + name banner + job title -->
+            <tr>
+                <td style="padding:0;font-size:0;line-height:0;">
+                    <?php if ( $generated['header'] ) : ?>
+                        <img src="<?php echo esc_url( $generated['header']['url'] ); ?>" width="<?php echo esc_attr( $generated['header']['width'] ); ?>" height="<?php echo esc_attr( $generated['header']['height'] ); ?>" alt="<?php echo esc_attr( trim( get_the_title() . ( $job_title ? ', ' . $job_title : '' ) ) ); ?>" style="display:block;border:0;" />
                     <?php else : ?>
-                        <p class="signature-name esp-render" data-field="name" style="margin:0;display:inline-block;white-space:nowrap;line-height:1;font-size:29px;"><?php echo esc_html( get_the_title() ); ?></p>
-                    <?php endif; ?>
-
-                    <?php if ( $job_title ) : ?>
-                        <?php if ( $signature_title_img_url ) : ?>
-                            <img src="<?php echo esc_url( $signature_title_img_url ); ?>" alt="<?php echo esc_attr( $job_title ); ?>" style="display:block;margin:8px 0 16px;" />
-                        <?php else : ?>
-                            <p class="signature-title esp-render" data-field="title" style="margin:6px 0 16px;font-size:15px;font-weight:400;display:inline-block;white-space:nowrap;line-height:1;"><?php echo esc_html( $job_title ); ?></p>
-                        <?php endif; ?>
-                    <?php endif; ?>
-
-                    <!-- CTA + Phone -->
-                    <table cellpadding="0" cellspacing="0" class="signature-cta-line">
-                        <tr>
-                            <?php if ( $cta_button && $meeting_url ) : ?>
-                                <td class="signature-cta" style="padding-right:18px;">
-                                    <a href="<?php echo esc_url( $meeting_url ); ?>" target="_blank"><img src="<?php echo esc_url( $cta_button ); ?>" alt="CTA" style="display:block;height:32px;" /></a>
-                                </td>
+                        <div class="esp-header esp-render" data-field="header">
+                            <div class="esp-header-bar"></div>
+                            <div class="esp-header-slant"></div>
+                            <div class="esp-header-avatar"<?php echo $avatar_url ? ' style="background-image:url(' . esc_url( $avatar_url ) . ');"' : ''; ?>></div>
+                            <div class="esp-header-name"><?php echo esc_html( get_the_title() ); ?></div>
+                            <?php if ( $job_title ) : ?>
+                                <div class="esp-header-title"><?php echo esc_html( $job_title ); ?></div>
                             <?php endif; ?>
-                            <?php if ( $phone_number ) : ?>
-                            <td style="font-family:<?php echo esc_html( $body_css ); ?>;color:<?php echo esc_html( $secondary ); ?>;font-size:15px;white-space:nowrap;">
-                                <a href="tel:<?php echo esc_attr( $phone_digits ); ?>" style="color:<?php echo esc_html( $secondary ); ?>;text-decoration:none;font-weight:500;display:inline-block;line-height:0;vertical-align:middle;margin-top:-4px;">
-                                    <?php if ( $signature_phone_img_url ) : ?>
-                                        <img src="<?php echo esc_url( $signature_phone_img_url ); ?>" alt="<?php echo esc_attr( 'M ' . $phone_display ); ?>" style="display:inline-block;max-height:20px;vertical-align:middle;" />
-                                    <?php else : ?>
-                                        <span class="esp-render" data-field="phone"><small style="font-weight:400;">M</small> <?php echo esc_html( $phone_display ); ?></span>
-                                    <?php endif; ?>
-                                </a>
-                            </td>
-                            <?php endif; ?>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-
-            <!-- Divider -->
-            <tr>
-                <td colspan="2" height="1" style="line-height:1px;font-size:1px;background:#E4E5E7;margin:0;padding:0;"></td>
-            </tr>
-
-            <!-- Bottom row -->
-            <tr class="signature-bottom">
-                <td colspan="2">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 6px 0;">
-                        <tr>
-                            <!-- Company Logo -->
-                            <td style="padding-right:20px;white-space:nowrap;">
-                                <?php if ( $company_logo ) : ?>
-                                    <a href="<?php echo esc_url( $site_url_raw ); ?>" target="_blank" style="display:inline-block;">
-                                        <img src="<?php echo esc_url( $company_logo ); ?>" alt="Company Logo" style="vertical-align:middle;" />
-                                    </a>
-                                <?php endif; ?>
-                            </td>
-
-                            <!-- Phone bottom -->
-                            <?php if ( $office_phone ) : ?>
-                            <td style="font-family:<?php echo esc_html( $body_css ); ?>;color:<?php echo esc_html( $neutral ); ?>;font-size:14px;white-space:nowrap;vertical-align:baseline;padding-top:2px;">
-                                <a href="tel:<?php echo esc_attr( $office_digits ); ?>" style="color:<?php echo esc_html( $neutral ); ?>;text-decoration:none;font-weight:400;display:inline-block;margin-right:2px;line-height:0;vertical-align:middle;">
-                                    <?php if ( $signature_phone_only_img_url ) : ?>
-                                        <img src="<?php echo esc_url( $signature_phone_only_img_url ); ?>" alt="<?php echo esc_attr( 'O ' . $office_display ); ?>" style="display:inline-block;max-height:20px;vertical-align:middle;" />
-                                    <?php else : ?>
-                                        <span class="esp-render" data-field="phone_only" style="font-weight:bold;"><small style="font-weight:400;">O</small> <?php echo esc_html( $office_display ); ?></span>
-                                    <?php endif; ?>
-                                </a>
-                            </td>
-                            <?php endif; ?>
-
-                            <!-- Website -->
-                            <td align="right" style="font-family:<?php echo esc_html( $body_css ); ?>;color:<?php echo esc_html( $neutral ); ?>;font-size:14px;white-space:nowrap;vertical-align:baseline;">
-                                <a href="<?php echo esc_url( $site_url_raw ); ?>" style="color:<?php echo esc_html( $neutral ); ?>;text-decoration:none;font-weight:500;display:inline-block;line-height:0;vertical-align:middle;" target="_blank">
-                                    <?php if ( $signature_site_img_url ) : ?>
-                                        <img src="<?php echo esc_url( $signature_site_img_url ); ?>" alt="<?php echo esc_attr( strtoupper( $site_domain ) ); ?>" style="display:inline-block;max-height:20px;vertical-align:middle;" />
-                                    <?php else : ?>
-                                        <span class="esp-render" data-field="site"><?php echo esc_html( strtoupper( $site_domain ) ); ?></span>
-                                    <?php endif; ?>
-                                </a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>                     
-            <!-- Divider -->
-            <tr>
-                <td colspan="2" height="1" style="line-height:1px;font-size:1px;background:#E4E5E7;margin:0;padding:0;"></td>
-            </tr>
-
-            <!-- Social Icons -->
-            <tr style="display:block;margin-top:10px;">
-                <td colspan="2" style="padding:0;">
-                    <?php if ( ! empty( $options['social_links'] ) ) : ?>
-                        <div class="social-icons">
-                            <?php foreach ( $options['social_links'] as $row ) : ?>
-                                <a href="<?php echo esc_url( $row['url'] ); ?>" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">
-                                    <img src="<?php echo esc_url( $row['icon'] ); ?>" alt="" style="width:24px;height:24px;margin-right:6px;" />
-                                </a>
-                            <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
                 </td>
             </tr>
+
+            <!-- Company logo + contact details -->
+            <tr>
+                <td style="padding:15px 0 0 0;">
+                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">
+                        <tr>
+                            <td valign="middle" style="padding:0 14px 0 6px;font-size:0;line-height:0;">
+                                <a href="<?php echo esc_url( $site_url_raw ); ?>" target="_blank" rel="noopener" style="display:block;">
+                                    <img src="<?php echo esc_url( $company_logo ); ?>" width="138" height="45" alt="<?php echo esc_attr( $site_domain ); ?>" style="display:block;border:0;" />
+                                </a>
+                            </td>
+                            <td valign="middle" style="padding:0;">
+                                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">
+                                    <?php if ( $phone_display ) : ?>
+                                        <tr>
+                                            <td height="20" valign="middle" style="height:20px;padding:0;font-size:0;line-height:0;">
+                                                <a href="tel:<?php echo esc_attr( $phone_digits ); ?>" style="display:block;text-decoration:none;">
+                                                    <?php if ( $generated['phone'] ) : ?>
+                                                        <img src="<?php echo esc_url( $generated['phone']['url'] ); ?>" width="<?php echo esc_attr( $generated['phone']['width'] ); ?>" height="<?php echo esc_attr( $generated['phone']['height'] ); ?>" alt="<?php echo esc_attr( $phone_display ); ?>" style="display:block;border:0;" />
+                                                    <?php else : ?>
+                                                        <span class="esp-mono esp-render" data-field="phone"><?php echo esc_html( $phone_display ); ?></span>
+                                                    <?php endif; ?>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                    <tr>
+                                        <td height="20" valign="middle" style="height:20px;padding:0;font-size:0;line-height:0;">
+                                            <a href="<?php echo esc_url( $site_url_raw ); ?>" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+                                                <?php if ( $generated['site'] ) : ?>
+                                                    <img src="<?php echo esc_url( $generated['site']['url'] ); ?>" width="<?php echo esc_attr( $generated['site']['width'] ); ?>" height="<?php echo esc_attr( $generated['site']['height'] ); ?>" alt="<?php echo esc_attr( $site_domain ); ?>" style="display:block;border:0;" />
+                                                <?php else : ?>
+                                                    <span class="esp-mono esp-render" data-field="site"><?php echo esc_html( $site_domain ); ?></span>
+                                                <?php endif; ?>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Accent rule -->
+            <tr>
+                <td style="padding:17px 0 0 0;">
+                    <table width="321" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;width:321px;">
+                        <tr>
+                            <td height="1" style="height:1px;padding:0;font-size:1px;line-height:1px;background-color:<?php echo esc_html( $tertiary ); ?>;">&nbsp;</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
         </table>
     </div>
-    <?php
-        $need_render = ( ! $signature_name_img_url || ! $signature_title_img_url || ! $signature_phone_img_url || ! $signature_phone_only_img_url || ! $signature_site_img_url );
-        if ( current_user_can( 'edit_post', $post->ID ) && $need_render ) : ?>
+    <?php if ( current_user_can( 'edit_post', $post->ID ) && $need_render ) : ?>
         <?php /* phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript, PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- html2canvas library required for signature image generation, loaded only for editors */ ?>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function(){
+            window.addEventListener('load', function(){
                 var renders = document.querySelectorAll('.esp-render');
                 if(!renders.length){return;}
 
@@ -275,29 +222,52 @@ $signature_phone_only_img_url = $signature_phone_only_img_id ? wp_get_attachment
                     return trimmed;
                 }
 
-                renders.forEach(function(el){
-                    const field = el.dataset.field;
-                    // Render at 1x scale to match actual text size.
-                    // Using devicePixelRatio was causing oversized images on high-DPI displays.
-                    var scale = 1;
-                    html2canvas(el, {backgroundColor: null, scale: scale}).then(function(canvas){
-                        // Remove any transparent whitespace before encoding.
-                        canvas = trimCanvas(canvas);
-                        var dataUrl = canvas.toDataURL('image/png');
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>');
-                    var formData = new FormData();
-                    formData.append('action', 'esp_upload_signature_image');
-                    formData.append('nonce', '<?php echo esc_attr( wp_create_nonce( 'esp_signature_image' ) ); ?>');
-                    formData.append('post_id', '<?php echo (int) $post->ID; ?>');
-                    formData.append('field', field);
-                    formData.append('image', dataUrl);
-                        xhr.onload = function(){
-                            if(--pending === 0){ location.reload(); }
-                        };
-                        xhr.send(formData);
+                // Shrink the name until it fits the banner, so long names are never clipped.
+                function fitName(){
+                    var name = document.querySelector('.esp-header-name');
+                    if(!name){return;}
+                    var available = 380 - name.offsetLeft - 8;
+                    var size = parseFloat(window.getComputedStyle(name).fontSize);
+                    while(name.scrollWidth > available && size > 12){
+                        size -= 0.5;
+                        name.style.fontSize = size + 'px';
+                    }
+                }
+
+                function render(){
+                    fitName();
+
+                    renders.forEach(function(el){
+                        const field = el.dataset.field;
+                        // Render at 2x so the generated PNG stays sharp on high-DPI screens.
+                        // The template halves these dimensions when printing the <img>.
+                        var scale = 2;
+                        html2canvas(el, {backgroundColor: null, scale: scale}).then(function(canvas){
+                            // Remove any transparent whitespace before encoding.
+                            canvas = trimCanvas(canvas);
+                            var dataUrl = canvas.toDataURL('image/png');
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>');
+                        var formData = new FormData();
+                        formData.append('action', 'esp_upload_signature_image');
+                        formData.append('nonce', '<?php echo esc_attr( wp_create_nonce( 'esp_signature_image' ) ); ?>');
+                        formData.append('post_id', '<?php echo (int) $post->ID; ?>');
+                        formData.append('field', field);
+                        formData.append('image', dataUrl);
+                            xhr.onload = function(){
+                                if(--pending === 0){ location.reload(); }
+                            };
+                            xhr.send(formData);
+                        });
                     });
-                });
+                }
+
+                // Wait for Outfit / Red Hat Mono so the fallback font is never baked into the PNGs.
+                if(document.fonts && document.fonts.ready){
+                    document.fonts.ready.then(render);
+                } else {
+                    render();
+                }
             });
         </script>
     <?php endif; ?>
@@ -443,4 +413,4 @@ $signature_phone_only_img_url = $signature_phone_only_img_id ? wp_get_attachment
     </script>
     <?php endif; ?>
 </body>
-</html> 
+</html>
