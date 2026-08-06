@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.2  
+**Stable tag:** 1.0.3  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,11 @@ To check for updates manually:
 
 ## Changelog
 
+### Version 1.0.3
+- Redesigned signature preview page: left-aligned layout, actions below the signature, back link to edit screen
+- Sharper logo via 2× asset displayed at standard size
+- Sharper avatar: larger source image, `<img>` element for html2canvas capture, preload before rasterizing
+
 ### Version 1.0.2
 - Fix update checker to track the `main` branch instead of legacy git tags
 
@@ -159,7 +164,8 @@ Uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checke
 email-signatures-rtd/
 ├── assets/
 │   └── imgs/
-│       └── rtd-logo.png
+│       ├── rtd-logo.png
+│       └── rtd-logo@2x.png
 ├── plugin-update-checker/
 │   └── [library files]
 ├── templates/
