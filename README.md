@@ -1,10 +1,10 @@
-# Email Signatures Pro
+# Email Signatures RTD
 
 **Contributors:** Webfor Agency  
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.2.1  
+**Stable tag:** 1.0.0  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Email Signatures Pro allows you to create and manage standardized email signatur
 ### Manual Installation
 
 1. Download the plugin files
-2. Upload the `email-signatures-pro` folder to `/wp-content/plugins/`
+2. Upload the `email-signatures-rtd` folder to `/wp-content/plugins/`
 3. Activate the plugin through the 'Plugins' menu in WordPress
 4. Navigate to **Signatures** → **Settings** to configure global options
 
@@ -217,7 +217,7 @@ Uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checke
 ### File Structure
 
 ```
-email-signatures-pro/
+email-signatures-rtd/
 ├── assets/
 │   ├── css/
 │   │   └── esp-admin.css
@@ -227,7 +227,7 @@ email-signatures-pro/
 │   └── [library files]
 ├── templates/
 │   └── single-signature.php
-├── email-signatures-pro.php
+├── email-signatures-rtd.php
 └── README.md
 ```
 
