@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.0  
+**Stable tag:** 1.0.1  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,9 @@ To check for updates manually:
 - PHP 7.4 or higher
 
 ## Changelog
+
+### Version 1.0.1
+- Testing release to verify GitHub-based plugin updates from the `main` branch
 
 ### Version 1.2.1
 - Minor bug fixes and improvements
