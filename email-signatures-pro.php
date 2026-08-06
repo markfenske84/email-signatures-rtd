@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Email Signatures Pro
+ * Plugin Name: Email Signatures RTD
  * Description: Manage email signature templates, global styles and assets.
- * Version: 1.2.1
+ * Version: 1.0.0
  * Author: Webfor Agency
  * Author URI: https://webfor.com
- * Text Domain: email-signatures-pro
+ * Text Domain: email-signatures-rtd
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -19,9 +19,9 @@ if ( file_exists( __DIR__ . '/plugin-update-checker/plugin-update-checker.php' )
 	require_once __DIR__ . '/plugin-update-checker/plugin-update-checker.php';
 	
 	$esp_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-		'https://github.com/markfenske84/email-signatures-pro/',
+		'https://github.com/markfenske84/email-signatures-rtd/',
 		__FILE__,
-		'email-signatures-pro'
+		'email-signatures-rtd'
 	);
 	
 	$esp_update_checker->setBranch( 'main' );
