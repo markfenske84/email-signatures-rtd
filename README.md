@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.1  
+**Stable tag:** 1.0.2  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,7 +96,7 @@ If you update signature details:
 
 ### Updates
 
-The plugin uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) (v5.4) to provide automatic updates from GitHub releases.
+The plugin uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) (v5.4) to provide automatic updates from the GitHub `main` branch.
 
 To check for updates manually:
 
@@ -111,30 +111,16 @@ To check for updates manually:
 
 ## Changelog
 
+### Version 1.0.2
+- Fix update checker to track the `main` branch instead of legacy git tags
+
 ### Version 1.0.1
 - Testing release to verify GitHub-based plugin updates from the `main` branch
 
-### Version 1.2.1
-- Minor bug fixes and improvements
-- Enhanced script dependency handling
-
-### Version 1.2.0
-- Converted all jQuery code to vanilla JavaScript
-- Fixed WordPress coding standards compliance issues
-- Enhanced security with proper input sanitization and escaping
-- Replaced deprecated functions (unlink to wp_delete_file)
-
-### Version 1.1.3
-- Implemented plugin-update-checker with direct folder structure
-- Updated plugin metadata to match organizational standards
-- Added comprehensive README documentation
-- Removed composer dependencies in favor of bundled update checker
-- Enhanced update checking functionality
-
-### Version 1.1.2
-- Updated to use plugin-update-checker folder structure
-- Improved metadata and documentation
-- Enhanced GitHub update integration
+### Version 1.0.0
+- RTD Logistics signature template redesign (Outfit + Red Hat Mono, fixed 380×164 layout)
+- Simplified admin: per-signature fields only (title, phone, avatar); settings page removed
+- Hardcoded brand colors, fonts, logo, and website URL
 
 ## Support
 
