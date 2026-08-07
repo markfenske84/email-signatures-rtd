@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.3  
+**Stable tag:** 1.0.4  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,7 +22,9 @@ Email Signatures RTD lets you create and manage standardized email signatures fo
   - Title / Position
   - Phone Number
   - Featured Image (avatar)
-- **Automatic Image Generation**: Creates PNG images for the header block, phone line, and website line
+- **Edit Screen Links**: View Signature and Preview Signature (unsaved) from the publish box
+- **Email-Safe Output**: Centralized renderer produces table + inline-styled PNG images only for clipboard copy
+- **Avatar Crop**: Hard-cropped `esp-avatar` image size (172×172) for consistent circular photos
 - **Frontend Display**: Protected signature pages viewable only by logged-in users
 - **Regeneration**: Ability to regenerate signature images when content changes
 - **Automatic Updates**: GitHub-based automatic updates via Plugin Update Checker
@@ -61,7 +63,11 @@ Signatures are protected and require users to be logged in to view them.
 
 ### Copying Signatures
 
-On the signature page, click **Copy Signature** to copy the email-safe HTML to your clipboard once all images have been generated.
+On the signature page, click **Copy Signature** to copy email-safe HTML (tables and PNG images only) to your clipboard once all images have been generated. Copy is blocked until generation completes.
+
+### Preview Without Saving
+
+On the signature edit screen, click **Preview Signature** to open a new tab with the full pipeline (PNG generation + Copy) using current form values without saving the post.
 
 ### Regenerating Signatures
 
@@ -93,6 +99,8 @@ If you update signature details:
 
 - `esp_upload_signature_image`: Handle signature image uploads
 - `esp_regenerate_signature`: Clear cached signature images
+- `esp_stage_preview`: Stage unsaved preview data in a transient
+- `esp_get_signature_html`: Return email-safe signature HTML for in-place DOM swap
 
 ### Updates
 
@@ -110,6 +118,15 @@ To check for updates manually:
 - PHP 7.4 or higher
 
 ## Changelog
+
+### Version 1.0.4
+- View Signature and Preview Signature links on the edit screen publish box
+- Unsaved preview flow with full PNG generation and Copy via user transients
+- Centralized email-safe HTML renderer (`signature-email.php` partial)
+- Avatar hard crop (`esp-avatar` 172×172) for non-square featured images
+- Conditional PNG cache invalidation (only when signature fields change)
+- Faster generation: skip attachment metadata, in-place DOM swap (no reload), self-hosted html2canvas
+- Copy sanitization: block copy if divs remain, strip class attributes from clipboard HTML
 
 ### Version 1.0.3
 - Redesigned signature preview page: left-aligned layout, actions below the signature, back link to edit screen
@@ -163,12 +180,20 @@ Uses [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checke
 ```
 email-signatures-rtd/
 ├── assets/
-│   └── imgs/
-│       ├── rtd-logo.png
-│       └── rtd-logo@2x.png
+│   ├── imgs/
+│   │   ├── rtd-logo.png
+│   │   └── rtd-logo@2x.png
+│   └── js/
+│       ├── esp-admin.js
+│       └── html2canvas.min.js
+├── includes/
+│   └── esp-signature-render.php
 ├── plugin-update-checker/
 │   └── [library files]
 ├── templates/
+│   ├── partials/
+│   │   ├── signature-capture.php
+│   │   └── signature-email.php
 │   └── single-signature.php
 ├── email-signatures-rtd.php
 └── README.md
