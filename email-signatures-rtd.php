@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Email Signatures RTD
  * Description: RTD Logistics email signatures — create and copy a fixed-layout signature per team member.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Webfor Agency
  * Author URI: https://webfor.com
  * Text Domain: email-signatures-rtd

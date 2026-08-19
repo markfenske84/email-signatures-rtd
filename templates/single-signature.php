@@ -219,6 +219,8 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 				btn.type = 'button';
 				btn.id = 'esp-copy-btn';
 				btn.className = 'esp-btn esp-btn--primary';
+				// #esp-copy-btn is hidden by default so it never shows without JS.
+				btn.style.display = 'inline-block';
 				btn.textContent = '<?php echo esc_js( __( 'Copy Signature', 'email-signatures-pro' ) ); ?>';
 				actions.insertBefore(btn, actions.firstChild);
 				if(typeof window.espInitCopyButton === 'function'){

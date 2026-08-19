@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.5  
+**Stable tag:** 1.0.6  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,6 +118,9 @@ To check for updates manually:
 - PHP 7.4 or higher
 
 ## Changelog
+
+### Version 1.0.6
+- Fix Copy Signature button staying hidden after regenerating: the button is created by script once generation finishes, and was still matching the no-JS `display:none` rule
 
 ### Version 1.0.5
 - Fix blank signatures after generation: PNGs saved in 1.0.4 had no stored dimensions, so the email markup rendered them at 0×0
