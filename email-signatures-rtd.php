@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Email Signatures RTD
  * Description: RTD Logistics email signatures — create and copy a fixed-layout signature per team member.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: Webfor Agency
  * Author URI: https://webfor.com
  * Text Domain: email-signatures-rtd
@@ -90,7 +90,7 @@ if ( ! class_exists( 'Email_Signatures_Pro' ) ) {
 			if ( is_admin() ) {
 				add_action( 'add_meta_boxes_signature', array( $this, 'register_meta_boxes' ) );
 				add_action( 'save_post_signature', array( $this, 'save_signature_meta' ) );
-				add_action( 'post_submitbox_misc_actions', array( $this, 'render_submitbox_actions' ) );
+				add_action( 'edit_form_after_title', array( $this, 'render_editor_actions' ) );
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 				add_filter( 'admin_post_thumbnail_html', array( $this, 'avatar_thumbnail_note' ), 10, 2 );
 			}
@@ -256,23 +256,18 @@ if ( ! class_exists( 'Email_Signatures_Pro' ) ) {
 			delete_transient( $index_key );
 		}
 
-		public function render_submitbox_actions() {
-			global $post;
-
+		public function render_editor_actions( $post ) {
 			if ( ! $post || 'signature' !== $post->post_type ) {
 				return;
 			}
 
 			$can_view = $post->ID && 'auto-draft' !== $post->post_status;
 			?>
-			<div class="misc-pub-section esp-signature-actions">
+			<div class="esp-signature-actions" style="margin:12px 0 8px;">
 				<?php if ( $can_view ) : ?>
-					<a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>" class="button button-secondary" target="_blank" rel="noopener">
-						<?php esc_html_e( 'View Signature', 'email-signatures-pro' ); ?>
-					</a>
-					<button type="button" class="button button-secondary" id="esp-preview-signature-btn" data-post-id="<?php echo esc_attr( (string) $post->ID ); ?>">
-						<?php esc_html_e( 'Preview Signature', 'email-signatures-pro' ); ?>
-					</button>
+					<a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'View Signature', 'email-signatures-pro' ); ?></a>
+					<span aria-hidden="true"> | </span>
+					<a href="#" id="esp-preview-signature-btn" data-post-id="<?php echo esc_attr( (string) $post->ID ); ?>"><?php esc_html_e( 'Preview Signature', 'email-signatures-pro' ); ?></a>
 				<?php else : ?>
 					<span class="description"><?php esc_html_e( 'Save draft to enable signature links.', 'email-signatures-pro' ); ?></span>
 				<?php endif; ?>
@@ -291,16 +286,30 @@ if ( ! class_exists( 'Email_Signatures_Pro' ) ) {
 				'esp-admin',
 				plugins_url( 'assets/js/esp-admin.js', __FILE__ ),
 				array(),
-				'1.0.4',
+				(string) filemtime( plugin_dir_path( __FILE__ ) . 'assets/js/esp-admin.js' ),
 				true
+			);
+
+			$generated_image_ids = array(
+				get_post_meta( $post->ID, '_esp_signature_image_header', true ),
+				get_post_meta( $post->ID, '_esp_signature_image_phone', true ),
+				get_post_meta( $post->ID, '_esp_signature_image_site', true ),
 			);
 
 			wp_localize_script(
 				'esp-admin',
 				'espAdmin',
 				array(
-					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-					'nonce'   => wp_create_nonce( 'esp_stage_preview' ),
+					'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
+					'nonce'              => wp_create_nonce( 'esp_stage_preview' ),
+					'hasGeneratedImages' => (bool) array_filter( $generated_image_ids ),
+					'initialValues'      => array(
+						'title'       => get_post_field( 'post_title', $post->ID ),
+						'jobTitle'    => get_post_meta( $post->ID, '_esp_job_title', true ),
+						'phoneNumber' => get_post_meta( $post->ID, '_esp_phone_number', true ),
+						'thumbnailId' => (string) get_post_thumbnail_id( $post->ID ),
+					),
+					'replaceWarning'    => __( 'Saving these changes will replace the images used by your current email signature. After saving, copy the new signature and replace the old one in your email app. Continue?', 'email-signatures-pro' ),
 				)
 			);
 		}
@@ -454,6 +463,21 @@ if ( ! class_exists( 'Email_Signatures_Pro' ) ) {
 
 			$attach_id = wp_insert_attachment( $attachment, $file_path );
 
+			if ( is_wp_error( $attach_id ) || ! $attach_id ) {
+				@unlink( $file_path );
+				wp_send_json_error( __( 'Could not save image.', 'email-signatures-pro' ) );
+			}
+
+			// Full metadata generation is skipped for speed, but the dimensions
+			// are required for the email markup to size the PNG.
+			$image_size = getimagesize( $file_path );
+			esp_store_attachment_dimensions(
+				$attach_id,
+				$file_path,
+				$image_size ? (int) $image_size[0] : 0,
+				$image_size ? (int) $image_size[1] : 0
+			);
+
 			if ( $preview_key ) {
 				$preview = esp_get_preview_transient( $preview_key );
 				if ( ! $preview || (int) $preview['user_id'] !== get_current_user_id() || (int) $preview['post_id'] !== $post_id ) {
@@ -476,13 +500,13 @@ if ( ! class_exists( 'Email_Signatures_Pro' ) ) {
 				update_post_meta( $post_id, $meta_key, $attach_id );
 			}
 
-			$src = wp_get_attachment_image_src( $attach_id, 'full' );
+			list( $width, $height ) = esp_get_attachment_dimensions( $attach_id );
 			wp_send_json_success(
 				array(
-					'url'    => $src ? $src[0] : wp_get_attachment_url( $attach_id ),
+					'url'    => wp_get_attachment_url( $attach_id ),
 					'field'  => $field,
-					'width'  => $src ? (int) round( $src[1] / 2 ) : 0,
-					'height' => $src ? (int) round( $src[2] / 2 ) : 0,
+					'width'  => (int) round( $width / 2 ),
+					'height' => (int) round( $height / 2 ),
 				)
 			);
 		}

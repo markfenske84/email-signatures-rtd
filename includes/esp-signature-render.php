@@ -90,6 +90,60 @@ function esp_get_avatar_url( $post_id, $thumbnail_id = 0 ) {
 }
 
 /**
+ * Resolve pixel dimensions for a generated signature PNG.
+ *
+ * Signature PNGs are stored without full attachment metadata to keep uploads
+ * fast, so dimensions are read from the file and backfilled when missing.
+ *
+ * @param int $attachment_id Attachment ID.
+ * @return array{0: int, 1: int} Width and height, or zeros when unavailable.
+ */
+function esp_get_attachment_dimensions( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+	$meta          = wp_get_attachment_metadata( $attachment_id );
+
+	if ( ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+		return array( (int) $meta['width'], (int) $meta['height'] );
+	}
+
+	$file = get_attached_file( $attachment_id );
+	if ( ! $file || ! file_exists( $file ) ) {
+		return array( 0, 0 );
+	}
+
+	$size = getimagesize( $file );
+	if ( ! $size ) {
+		return array( 0, 0 );
+	}
+
+	esp_store_attachment_dimensions( $attachment_id, $file, (int) $size[0], (int) $size[1] );
+
+	return array( (int) $size[0], (int) $size[1] );
+}
+
+/**
+ * Store minimal attachment metadata so WordPress can report image dimensions.
+ *
+ * @param int    $attachment_id Attachment ID.
+ * @param string $file          Absolute file path.
+ * @param int    $width         Image width.
+ * @param int    $height        Image height.
+ */
+function esp_store_attachment_dimensions( $attachment_id, $file, $width, $height ) {
+	$meta = wp_get_attachment_metadata( $attachment_id );
+	$meta = is_array( $meta ) ? $meta : array();
+
+	$meta['width']  = (int) $width;
+	$meta['height'] = (int) $height;
+	$meta['file']   = _wp_relative_upload_path( $file );
+	if ( ! isset( $meta['sizes'] ) ) {
+		$meta['sizes'] = array();
+	}
+
+	wp_update_attachment_metadata( $attachment_id, $meta );
+}
+
+/**
  * Load generated PNG metadata from post meta or preview transient.
  *
  * @param int    $post_id     Signature post ID.
@@ -122,14 +176,25 @@ function esp_get_generated_images( $post_id, $preview_key = '' ) {
 		if ( empty( $image_sources[ $field ] ) ) {
 			continue;
 		}
-		$src = wp_get_attachment_image_src( absint( $image_sources[ $field ] ), 'full' );
-		if ( $src ) {
-			$generated[ $field ] = array(
-				'url'    => $src[0],
-				'width'  => (int) round( $src[1] / 2 ),
-				'height' => (int) round( $src[2] / 2 ),
-			);
+		$attachment_id = absint( $image_sources[ $field ] );
+		$url           = wp_get_attachment_url( $attachment_id );
+		if ( ! $url ) {
+			continue;
 		}
+
+		list( $width, $height ) = esp_get_attachment_dimensions( $attachment_id );
+
+		// Without real dimensions the email markup would render a 0x0 image,
+		// so treat the PNG as missing and let it regenerate instead.
+		if ( $width < 2 || $height < 2 ) {
+			continue;
+		}
+
+		$generated[ $field ] = array(
+			'url'    => $url,
+			'width'  => (int) round( $width / 2 ),
+			'height' => (int) round( $height / 2 ),
+		);
 	}
 
 	return $generated;

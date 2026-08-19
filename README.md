@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.4  
+**Stable tag:** 1.0.5  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,6 +118,14 @@ To check for updates manually:
 - PHP 7.4 or higher
 
 ## Changelog
+
+### Version 1.0.5
+- Fix blank signatures after generation: PNGs saved in 1.0.4 had no stored dimensions, so the email markup rendered them at 0×0
+- Generated PNGs now record their width and height on upload, without the slow full metadata pass
+- Existing signatures repair themselves on the next page load; no regeneration required
+- A PNG with unreadable dimensions is now treated as missing and regenerated instead of rendering empty
+- View Signature and Preview Signature moved below the post title as text links
+- Confirmation prompt before regenerating, or before saving changes that replace an active signature's images
 
 ### Version 1.0.4
 - View Signature and Preview Signature links on the edit screen publish box

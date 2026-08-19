@@ -25,6 +25,9 @@ $body_css       = $context['body_css'];
 $avatar_display = (int) $context['avatar_display'];
 $need_render    = $context['need_render'];
 $is_preview     = $context['is_preview'];
+$regenerate_confirm = $is_preview
+	? __( 'Regenerate this preview?', 'email-signatures-pro' )
+	: __( 'This will replace the images used by your current email signature. After regenerating, copy the new signature and replace the old one in your email app. Continue?', 'email-signatures-pro' );
 
 $html2canvas_url = plugins_url( 'assets/js/html2canvas.min.js', dirname( __DIR__ ) . '/email-signatures-rtd.php' );
 if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
@@ -396,7 +399,7 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 		var regenBtn = document.getElementById('esp-regenerate-btn');
 		if(regenBtn){
 			regenBtn.addEventListener('click', function(){
-				if(!confirm('<?php echo esc_js( __( 'This will clear cached images and regenerate them. Continue?', 'email-signatures-pro' ) ); ?>')){ return; }
+				if(!confirm('<?php echo esc_js( $regenerate_confirm ); ?>')){ return; }
 
 				regenBtn.disabled = true;
 				regenBtn.textContent = '<?php echo esc_js( __( 'Regenerating…', 'email-signatures-pro' ) ); ?>';
