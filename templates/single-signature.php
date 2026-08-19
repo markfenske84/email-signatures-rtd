@@ -67,6 +67,20 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 		.esp-back{margin:20px 0 0;padding:0;}
 		.esp-back a{font-size:14px;color:<?php echo esc_html( $primary ); ?>;text-decoration:none;}
 		.esp-back a:hover{text-decoration:underline;}
+		.esp-instructions{margin:40px 0 0;padding:28px 0 0;border-top:1px solid #dcdcde;max-width:600px;}
+		.esp-instructions h2{margin:0 0 4px;font-size:18px;font-weight:600;color:#1d2327;}
+		.esp-instructions p.esp-instructions-intro{margin:0 0 20px;font-size:14px;color:#646970;}
+		.esp-instructions details{margin:0 0 12px;background:#fff;border:1px solid #dcdcde;border-radius:6px;overflow:hidden;}
+		.esp-instructions summary{padding:14px 16px;font-size:15px;font-weight:600;color:<?php echo esc_html( $primary ); ?>;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;}
+		.esp-instructions summary::-webkit-details-marker{display:none;}
+		.esp-instructions summary::before{content:'\25B6';font-size:10px;color:#646970;transition:transform .15s ease;}
+		.esp-instructions details[open] summary::before{transform:rotate(90deg);}
+		.esp-instructions summary:hover{background:#f6f7f7;}
+		.esp-instructions .esp-steps{margin:0;padding:0 16px 16px 40px;font-size:14px;line-height:1.7;color:#1d2327;}
+		.esp-instructions .esp-steps li{margin:0 0 6px;}
+		.esp-instructions .esp-steps li:last-child{margin:0;}
+		.esp-instructions .esp-steps strong{font-weight:600;}
+		.esp-instructions .esp-steps code{background:#f0f2f5;padding:2px 5px;border-radius:3px;font-size:13px;}
 		.esp-header{position:relative;width:380px;height:86px;overflow:hidden;}
 		.esp-header-bar{position:absolute;left:40px;top:19px;width:330px;height:40px;background:<?php echo esc_html( $primary ); ?>;z-index:1;}
 		.esp-header-slant{position:absolute;left:370px;top:19px;width:0;height:0;border-top:40px solid <?php echo esc_html( $primary ); ?>;border-right:10px solid transparent;z-index:1;}
@@ -131,6 +145,92 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 			?>
 			<a href="<?php echo esc_url( $esp_back_url ); ?>">&lt;- <?php esc_html_e( 'Back to WordPress', 'email-signatures-pro' ); ?></a>
 		</p>
+
+		<div class="esp-instructions">
+			<h2><?php esc_html_e( 'How to Use Your Signature', 'email-signatures-pro' ); ?></h2>
+			<p class="esp-instructions-intro"><?php esc_html_e( 'Click "Copy Signature" above, then follow the steps for your email client.', 'email-signatures-pro' ); ?></p>
+
+			<details>
+				<summary><?php esc_html_e( 'Gmail (Web)', 'email-signatures-pro' ); ?></summary>
+				<ol class="esp-steps">
+					<li><?php esc_html_e( 'Open Gmail and click the gear icon in the top-right corner, then click "See all settings".', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Scroll down to the "Signature" section on the General tab.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Click "+ Create new" to add a new signature, or select an existing one to replace.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Click inside the signature text box and delete any existing content.', 'email-signatures-pro' ); ?></li>
+					<li><?php
+						printf(
+							/* translators: %s: keyboard shortcut */
+							esc_html__( 'Paste your copied signature (%s on Mac, %s on Windows).', 'email-signatures-pro' ),
+							'<code>Cmd + V</code>',
+							'<code>Ctrl + V</code>'
+						);
+					?></li>
+					<li><?php esc_html_e( 'Under "Signature defaults", choose this signature for new emails and/or replies.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Scroll to the bottom and click "Save Changes".', 'email-signatures-pro' ); ?></li>
+				</ol>
+			</details>
+
+			<details>
+				<summary><?php esc_html_e( 'Outlook (Desktop App — Windows)', 'email-signatures-pro' ); ?></summary>
+				<ol class="esp-steps">
+					<li><?php
+						printf(
+							esc_html__( 'Go to %1$s > %2$s > %3$s > %4$s.', 'email-signatures-pro' ),
+							'<strong>File</strong>',
+							'<strong>Options</strong>',
+							'<strong>Mail</strong>',
+							'<strong>Signatures</strong>'
+						);
+					?></li>
+					<li><?php esc_html_e( 'Click "New" to create a new signature, or select an existing one to edit.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Click inside the "Edit signature" box and clear any existing content.', 'email-signatures-pro' ); ?></li>
+					<li><?php
+						printf(
+							esc_html__( 'Paste your copied signature (%s).', 'email-signatures-pro' ),
+							'<code>Ctrl + V</code>'
+						);
+					?></li>
+					<li><?php esc_html_e( 'Use the "Choose default signature" dropdowns to assign it to new messages and/or replies.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Click "OK" to save.', 'email-signatures-pro' ); ?></li>
+				</ol>
+			</details>
+
+			<details>
+				<summary><?php esc_html_e( 'Outlook (Web / Microsoft 365)', 'email-signatures-pro' ); ?></summary>
+				<ol class="esp-steps">
+					<li><?php esc_html_e( 'Click the gear icon in the top-right corner and choose "View all Outlook settings".', 'email-signatures-pro' ); ?></li>
+					<li><?php
+						printf(
+							esc_html__( 'Go to %1$s > %2$s.', 'email-signatures-pro' ),
+							'<strong>Mail</strong>',
+							'<strong>Compose and reply</strong>'
+						);
+					?></li>
+					<li><?php esc_html_e( 'Under "Email signature", click "+ New signature" or select an existing one.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Clear the editor, then paste your copied signature.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Set it as the default for new messages and/or replies using the dropdowns below.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Click "Save".', 'email-signatures-pro' ); ?></li>
+				</ol>
+			</details>
+
+			<details>
+				<summary><?php esc_html_e( 'Apple Mail (Mac)', 'email-signatures-pro' ); ?></summary>
+				<ol class="esp-steps">
+					<li><?php
+						printf(
+							esc_html__( 'Open Mail and go to %1$s > %2$s > %3$s.', 'email-signatures-pro' ),
+							'<strong>Mail</strong>',
+							'<strong>Settings</strong>',
+							'<strong>Signatures</strong>'
+						);
+					?></li>
+					<li><?php esc_html_e( 'Select your email account on the left, then click the "+" button to add a new signature.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Clear the preview pane on the right, then paste your copied signature.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Use the "Choose Signature" dropdown at the bottom to set it as the default.', 'email-signatures-pro' ); ?></li>
+					<li><?php esc_html_e( 'Close the Settings window — changes save automatically.', 'email-signatures-pro' ); ?></li>
+				</ol>
+			</details>
+		</div>
 	</div>
 
 	<?php if ( current_user_can( 'edit_post', $post->ID ) && $need_render ) : ?>

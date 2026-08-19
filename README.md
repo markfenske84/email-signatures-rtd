@@ -4,7 +4,7 @@
 **Tags:** email, signature, template, team  
 **Requires at least:** 5.0  
 **Tested up to:** 6.8  
-**Stable tag:** 1.0.7  
+**Stable tag:** 1.0.8  
 **License:** GPL v2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,6 +118,9 @@ To check for updates manually:
 - PHP 7.4 or higher
 
 ## Changelog
+
+### Version 1.0.8
+- Add step-by-step setup instructions below the signature for Gmail, Outlook (desktop and web), and Apple Mail as collapsible accordions
 
 ### Version 1.0.7
 - Gate the Copy Signature button on an `esp-js` class set on `<html>`, so it shows whenever scripting is available regardless of when the button is created
