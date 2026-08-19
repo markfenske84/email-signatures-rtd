@@ -62,7 +62,7 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 		.esp-btn:disabled{opacity:.65;cursor:not-allowed;}
 		.esp-btn--primary{background:<?php echo esc_html( $primary ); ?>;}
 		.esp-btn--secondary{background:<?php echo esc_html( $neutral ); ?>;}
-		#esp-copy-btn{display:none;}
+		html:not(.esp-js) #esp-copy-btn{display:none;}
 		.esp-generating{font-size:14px;color:#646970;}
 		.esp-back{margin:20px 0 0;padding:0;}
 		.esp-back a{font-size:14px;color:<?php echo esc_html( $primary ); ?>;text-decoration:none;}
@@ -77,6 +77,7 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 		.esp-mono{font-family:<?php echo $body_css; ?>;font-size:17.5px;font-weight:300;line-height:20px;color:<?php echo esc_html( $neutral ); ?>;white-space:nowrap;}
 		<?php /* phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
 	</style>
+	<script>document.documentElement.className += ' esp-js';</script>
 </head>
 <body>
 	<div class="esp-page">
@@ -219,8 +220,6 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 				btn.type = 'button';
 				btn.id = 'esp-copy-btn';
 				btn.className = 'esp-btn esp-btn--primary';
-				// #esp-copy-btn is hidden by default so it never shows without JS.
-				btn.style.display = 'inline-block';
 				btn.textContent = '<?php echo esc_js( __( 'Copy Signature', 'email-signatures-pro' ) ); ?>';
 				actions.insertBefore(btn, actions.firstChild);
 				if(typeof window.espInitCopyButton === 'function'){
@@ -393,7 +392,6 @@ if ( ! file_exists( dirname( __DIR__ ) . '/assets/js/html2canvas.min.js' ) ) {
 	document.addEventListener('DOMContentLoaded', function(){
 		var copyBtn = document.getElementById('esp-copy-btn');
 		if(copyBtn){
-			copyBtn.style.display = 'inline-block';
 			espInitCopyButton(copyBtn);
 			ensureImgDimensions();
 		}
